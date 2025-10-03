@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webcam Class Register System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            height: calc(100vh - 40px);
+        }
+        
+        .webcam-container {
+            grid-column: 1;
+            grid-row: 1;
+            background-color: #2c3e50;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        
+        .webcam-feed {
+            width: 100%;
+            height: 300px;
+            background-color: #1a2530;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+        
+        .webcam-controls {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            background-color: #34495e;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .attendance-container {
+            grid-column: 2;
+            grid-row: 1 / span 2;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .tabs {
+            display: flex;
+            background-color: #34495e;
+        }
+        
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            color: #ecf0f1;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background-color: #3498db;
+        }
+        
+        .tab:hover:not(.active) {
+            background-color: #3d566e;
+        }
+        
+        .tab-content {
+            padding: 20px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        
+        .tab-pane {
+            display: none;
+        }
+        
+        .tab-pane.active {
+            display: block;
+        }
+        
+        .custom-selectors {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .selector {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .selector label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #7f8c8d;
+        }
+        
+        select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+        }
+        
+        .attendance-list {
+            margin-top: 20px;
+        }
+        
+        .attendance-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .attendance-item:last-child {
+            border-bottom: none;
+        }
+        
+        .person-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .status {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-present {
+            background-color: #d5f4e6;
+            color: #27ae60;
+        }
+        
+        .status-absent {
+            background-color: #fadbd8;
+            color: #e74c3c;
+        }
+        
+        .status-late {
+            background-color: #fdebd0;
+            color: #f39c12;
+        }
+        
+        .status-container {
+            grid-column: 1;
+            grid-row: 2;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        
+        .status-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .status-card {
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+        
+        .status-card h3 {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+        }
+        
+        .status-card p {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .camera-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .status-on {
+            background-color: #2ecc71;
+        }
+        
+        .status-off {
+            background-color: #e74c3c;
+        }
+        
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+            }
+            
+            .webcam-container {
+                grid-column: 1;
+                grid-row: 1;
+            }
+            
+            .attendance-container {
+                grid-column: 1;
+                grid-row: 2;
+            }
+            
+            .status-container {
+                grid-column: 1;
+                grid-row: 3;
+            }
+        }
+    </style>
+    <script>
+
+	async function getToday(){
+	  const res = await fetch('http://127.0.0.1:8000/today');
+	  if (!res.ok) throw new Error(`status: ${res.status}`);
+	  result = await res.json();
+	  console.log(result.attendance)
+	  return await result.attendance;
+	}
+
+	(async ()=>{
+	  const todays = await getToday();
+	  document.getElementById('firststudentname').textContent = todays[0]?.name ?? '';
+	  document.getElementById('firststudenttime').textContent = todays[0]?.timestamp ?? '';
+	  document.getElementById('secondstudentname').textContent = todays[1]?.name ?? '';
+	  document.getElementById('secondstudenttime').textContent = todays[1]?.timestamp ?? '';
+	  document.getElementById('thirdstudentname').textContent = todays[2]?.name ?? '';
+	  document.getElementById('thirdstudenttime').textContent = todays[2]?.timestamp ?? '';
+	  document.getElementById('fourthstudentname').textContent = todays[3]?.name ?? '';
+	  document.getElementById('fourthstudenttime').textContent = todays[3]?.timestamp ?? '';
+	  const amounthere = todays.length;
+	  console.log(amounthere)
+	  document.getElementById('absentrate').textContent = (amounthere/25)*100 + "%";
+	  document.getElementById('classtotal').textContent = amounthere + "/25";
+	})();
+
+	async function getyesterday(){
+	  const res = await fetch('http://127.0.0.1:8000/yesterday');
+	  if (!res.ok) throw new Error(`status: ${res.status}`);
+	  result = await res.json();
+	  console.log(result.attendance)
+	  return await result.attendance;
+	}
+
+	(async ()=>{
+	  const todays = await getyesterday();
+	  document.getElementById('firststudentnamey').textContent = todays[0]?.name ?? '';
+	  document.getElementById('firststudenttimey').textContent = todays[0]?.timestamp ?? '';
+	  document.getElementById('secondstudentnamey').textContent = todays[1]?.name ?? '';
+	  document.getElementById('secondstudenttimey').textContent = todays[1]?.timestamp ?? '';
+	  document.getElementById('thirdstudentnamey').textContent = todays[2]?.name ?? '';
+	  document.getElementById('thirdstudenttimey').textContent = todays[2]?.timestamp ?? '';
+	  document.getElementById('fourthstudentnamey').textContent = todays[3]?.name ?? '';
+	  document.getElementById('fourthstudenttimey').textContent = todays[3]?.timestamp ?? '';
+	})();
+
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="webcam-container">
+            <div class="webcam-feed" id="webcamFeed">
+                Camera Feed
+            </div>
+            <div class="webcam-controls">
+                <button class="btn btn-primary" id="startWebcam">Show Camera</button>
+                <button class="btn btn-danger" id="stopWebcam" disabled>Hide Camera</button>
+            </div>
+        </div>
+        
+        <div class="attendance-container">
+            <div class="tabs">
+                <div class="tab active" data-tab="live">Today</div>
+                <div class="tab" data-tab="yesterday">Yesterday</div>
+                <div class="tab" data-tab="tommorow">Tommorow</div>
+                <div class="tab" data-tab="custom">Another date</div>
+            </div>
+            
+            <div class="tab-content">
+                <div class="tab-pane active" id="live-tab">
+                    <h2>Todays Register</h2>
+                    <p>Current attendance for today</p>                    
+                    <div class="attendance-list">
+                        <div class="attendance-item">
+                            <div class="person-info">
+                                <div>
+                                    <div class="name" id='firststudentname'>John Doe</div>
+                                    <div class="time" id='firststudenttime'>Checked in: 08:45 AM</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="attendance-item">
+                            <div class="person-info">
+                                <div>
+                                    <div class="name" id='secondstudentname'>Sarah Johnson</div>
+                                    <div class="time" id='secondstudenttime'>Checked in: 09:15 AM</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="attendance-item">
+                            <div class="person-info">
+                                <div>
+                                    <div class="name" id='thirdstudentname'>Michael Brown</div>
+                                    <div class="time" id='thirdstudenttime'>Not checked in</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="attendance-item">
+                            <div class="person-info">
+                                <div>
+                                    <div class="name" id='fourthstudentname'>Emma Wilson</div>
+                                    <div class="time" id='fourthstudenttime'>Checked in: 08:55 AM</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-pane" id="yesterday-tab">
+                    <h2>Yesterday's Attendance</h2>
+                    <p>Attendance data for yesterday</p>
+                    <div class="attendance-list">
+                        <div class="attendance-item">
+                            <div class="person-info">
+                                <div>
+                                    <div class="name" id='firststudentnamey'>John Doe</div>
+                                    <div class="time" id='firststudenttimey'>Checked in: 08:45 AM</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="attendance-item">
+                            <div class="person-info">
+                                <div>
+                                    <div class="name" id='secondstudentnamey'>Sarah Johnson</div>
+                                    <div class="time" id='secondstudenttimey'>Checked in: 09:15 AM</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="attendance-item">
+                            <div class="person-info">
+                                <div>
+                                    <div class="name" id='thirdstudentnamey'>Michael Brown</div>
+                                    <div class="time" id='thirdstudenttimey'>Not checked in</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="attendance-item">
+                            <div class="person-info">
+                                <div>
+                                    <div class="name" id='fourthstudentnamey'>Emma Wilson</div>
+                                    <div class="time" id='fourthstudenttimey'>Checked in: 08:55 AM</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                
+                <div class="tab-pane" id="custom-tab">
+                    <h2>Custom Date Range</h2>
+                    <p>Select a specific week and hour to view attendance</p>
+                    
+                    <div class="custom-selectors">
+                        <div class="selector">
+                            <label for="week-select">Week Number</label>
+                            <select id="week-select">
+                                <option value="1">Week 1</option>
+                                <option value="2">Week 2</option>
+                                <option value="3">Week 3</option>
+                                <option value="4">Week 4</option>
+                                <option value="5">Week 5</option>
+                            </select>
+                        </div>
+                        <div class="selector">
+                            <label for="week-select">Day</label>
+                            <select id="week-select">
+                                <option value="1">Monday</option>
+                                <option value="2">Tuesday</option>
+                                <option value="3">Wedneday</option>
+                                <option value="4">Thursday</option>
+                                <option value="5">Friday</option>
+                            </select>
+                        </div>
+
+
+                        
+                        <div class="selector">
+                            <label for="hour-select">Hour</label>
+                            <select id="hour-select">
+                                <option value="9">08:00</option>
+                                <option value="9">09:00</option>
+                                <option value="10">10:00</option>
+                                <option value="11">11:00</option>
+                                <option value="12">12:00</option>
+                                <option value="13">13:00</option>
+                                <option value="14">14:00</option>
+                                <option value="15">15:00</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary">Load Data</button>
+                    
+                    <div class="attendance-list" style="margin-top: 20px;">
+                        <p>Select a week and hour to view attendance data.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="status-container">
+            <h2 class="status-title">System Status</h2>
+            
+            <div class="status-grid">
+                <div class="status-card">
+                    <h3>Camera Status</h3>
+                    <div class="camera-status">
+                        <div class="status-indicator status-on"></div>
+                        <span>Class 10.2: Active</span>
+                    </div>
+                    <div class="camera-status">
+                        <div class="status-indicator status-off"></div>
+                        <span>Class 11.1: Inactive</span>
+                    </div>
+                </div>
+                
+                <div class="status-card">
+                    <h3>Absenteeism Rate</h3>
+                    <p id='absentrate'>100%</p>
+                </div>
+                
+                <div class="status-card">
+                    <h3>Total Present Today</h3>
+                    <p id='classtotal'>0/25</p>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs
+                document.querySelectorAll('.tab').forEach(t => {
+                    t.classList.remove('active');
+                });
+                
+                // Add active class to clicked tab
+                tab.classList.add('active');
+                
+                // Hide all tab panes
+                document.querySelectorAll('.tab-pane').forEach(pane => {
+                    pane.classList.remove('active');
+                });
+                
+                // Show the corresponding tab pane
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+        
+        // Webcam functionality
+        const startWebcamBtn = document.getElementById('startWebcam');
+        const stopWebcamBtn = document.getElementById('stopWebcam');
+        const webcamFeed = document.getElementById('webcamFeed');
+        
+        let stream = null;
+        
+        startWebcamBtn.addEventListener('click', async () => {
+            try {
+                // Request access to the user's camera
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                
+                // Create a video element to display the webcam feed
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                video.autoplay = true;
+                video.playsInline = true;
+                
+                // Clear the webcam feed and append the video
+                webcamFeed.innerHTML = '';
+                webcamFeed.appendChild(video);
+                
+                // Update button states
+                startWebcamBtn.disabled = true;
+                stopWebcamBtn.disabled = false;
+            } catch (error) {
+                console.error('Error accessing webcam:', error);
+                webcamFeed.innerHTML = 'Error accessing webcam. Please check permissions.';
+            }
+        });
+        
+        stopWebcamBtn.addEventListener('click', () => {
+            if (stream) {
+                // Stop all tracks in the stream
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                
+                // Clear the webcam feed
+                webcamFeed.innerHTML = 'Webcam Feed - Click "Start Webcam" to begin';
+                
+                // Update button states
+                startWebcamBtn.disabled = false;
+                stopWebcamBtn.disabled = true;
+            }
+        });
+    </script>
+</body>
+</html>
